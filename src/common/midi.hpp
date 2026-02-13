@@ -1,3 +1,4 @@
+#include <deque>
 #pragma once
 
 #include "rack.hpp"
@@ -13,7 +14,7 @@ struct MidiOutput : rack::dsp::MidiGenerator<rack::PORT_MAX_CHANNELS>, rack::mid
 		return driverId > -1 && deviceId > -1;
 	}
 
-	void onMessage(rack::midi::Message message) override {
+	void onMessage(const rack::midi::Message& message) override { messageQueue.push_back(message);
 		rack::midi::Output::sendMessage(message);
 	}
 

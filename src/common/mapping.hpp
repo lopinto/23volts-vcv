@@ -153,7 +153,7 @@ struct HandleMapCollection : ParamMapCollection {
 		Module *targetModule = moduleWidget->module;
 		ParamQuantity *paramQuantity = targetModule->paramQuantities[targetParamId];
 		mapping->moduleName = moduleWidget->model->name;
-		mapping->paramName = paramQuantity->label;
+		mapping->paramName = getParamQuantity()->label;
 
 		learnNext();
 	}
@@ -572,10 +572,10 @@ struct MappingProcessor {
 		ParamQuantity* paramQuantity = module->paramQuantities[targetParamId];
 		
 		if (!paramQuantity) return;
-		if (!paramQuantity->isBounded()) return;
+		if (!getParamQuantity()->isBounded()) return;
 
 		float value = params[paramId]->getScaledValue();
-		float targetParameterValue = paramQuantity->getScaledValue();
+		float targetParameterValue = getParamQuantity()->getScaledValue();
 		
 		if(targetParameterValue != mapping->lastTargetValue) {
 			value = targetParameterValue;
@@ -585,8 +585,8 @@ struct MappingProcessor {
 		}
 
 		if(value != mapping->lastValue) {	
-			paramQuantity->setScaledValue(value);
-			mapping->lastTargetValue = paramQuantity->getScaledValue();		
+			getParamQuantity()->setScaledValue(value);
+			mapping->lastTargetValue = getParamQuantity()->getScaledValue();		
 			mapping->lastValue = value;
 		}
 	}
@@ -686,12 +686,12 @@ struct MappableParameter : TBase {
 	void step() override {
 		if(handleMap && handleMap->isLearning(paramId)) {
 			ParamWidget *touchedParam = APP->scene->rack->touchedParam;
-			if (touchedParam && touchedParam->paramQuantity->module != module) {
+			if (touchedParam && touchedParam->getParamQuantity()->module != module) {
 				APP->scene->rack->touchedParam = NULL;
-				int targetModuleId = touchedParam->paramQuantity->module->id;
-				int targetParamId = touchedParam->paramQuantity->paramId;
+				int targetModuleId = touchedParam->getParamQuantity()->module->id;
+				int targetParamId = touchedParam->getParamQuantity()->paramId;
 				handleMap->commitLearn(paramId, targetModuleId, targetParamId);
-				paramQuantity->setScaledValue(touchedParam->paramQuantity->getScaledValue());
+				getParamQuantity()->setScaledValue(touchedParam->getParamQuantity()->getScaledValue());
 			}
 		}
 		TBase::step();

@@ -137,7 +137,7 @@ struct PolySplitWidget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 
-		MenuLabel* item = new MenuLabel;
+		rack::ui::MenuLabel* item = new rack::ui::MenuLabel;
 	 	item->text = "Voices per output";
 	 	menu->addChild(item);
 

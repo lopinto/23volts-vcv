@@ -60,7 +60,7 @@ struct Organism {
 	}
 
 	~Organism() {
-		delete cells;
+		delete[] cells;
 	}
 
 	int randomSize() {
@@ -513,7 +513,7 @@ struct MonochromeGridDisplay : OpaqueWidget {
 	}
 
 	~MonochromeGridDisplay() {
-		delete cells;
+		delete[] cells;
 	}
 
 	void setBackgroundColor(uint8_t red, uint8_t green, uint8_t blue) {
@@ -675,7 +675,7 @@ struct CellsWidget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 
-		MenuLabel* item = new MenuLabel;
+		rack::ui::MenuLabel* item = new rack::ui::MenuLabel;
 	 	item->text = "Algorithm";
 	 	menu->addChild(item);
 

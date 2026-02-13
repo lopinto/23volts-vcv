@@ -538,7 +538,7 @@ struct MorphWidget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 		{
-			MenuLabel* item = new MenuLabel;
+			rack::ui::MenuLabel* item = new rack::ui::MenuLabel;
 	 		item->text = "Options";
 	 		menu->addChild(item);
 		}
