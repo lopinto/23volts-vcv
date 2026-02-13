@@ -16,7 +16,7 @@ rack::ui::Menu* MidiDriverItem::createChildMenu() {
 		item->port = port;
 		item->midiIO = midiIO;
 		item->driverId = driverId;
-		item->text = rack::midi::getDriverName(driverId);
+		item->text = rack::midi::getDriver(driverId)->getName();
 		item->rightText = CHECKMARK(item->driverId == port->driverId);
 		menu->addChild(item);
 	}
