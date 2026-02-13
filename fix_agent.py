@@ -1,57 +1,46 @@
 import os
+import re
 
-def fix_mapping_hpp():
-    path = "src/common/mapping.hpp"
-    print(f"🔎 Controllo file: {path}...")
+def fix_midi_cpp_logic(content):
+    print("   -> Aggiornamento logica driver MIDI in midi.cpp...")
     
-    if not os.path.exists(path):
-        print(f"❌ Errore: {path} non trovato!")
-        return
+    # In Rack 2, la gestione dei driver MIDI nei menu è diversa.
+    # Invece di iterare manualmente gli ID, usiamo gli helper moderni o adattiamo la chiamata.
+    
+    # ERRORE 1: port->getDriverIds() non esiste più.
+    # In Rack 2 si usa midi::getDriverIds() globale, oppure port->getDriverId() per quello corrente.
+    # Ma qui stiamo costruendo un MENU, quindi vogliamo la lista.
+    # La soluzione rapida è usare la funzione globale di Rack.
+    
+    if "port->getDriverIds()" in content:
+        content = content.replace("port->getDriverIds()", "rack::midi::getDriverIds()")
 
-    with open(path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    # ERRORE 2: port->getDriverName(driverId) -> rack::midi::getDriverName(driverId)
+    if "port->getDriverName(driverId)" in content:
+        content = content.replace("port->getDriverName(driverId)", "rack::midi::getDriverName(driverId)")
+
+    return content
+
+def main():
+    print("🤖 AGENTE 23VOLTS: Fix Menu MIDI...")
     
-    original = content
-    
-    # --- FIX 1: 'label' deve diventare 'name' ---
-    # Errore log: 'struct rack::engine::ParamQuantity' has no member named 'label'
-    if "paramQuantity->label" in content:
-        print("   -> Trovato 'paramQuantity->label', correggo in 'name'...")
-        content = content.replace("paramQuantity->label", "paramQuantity->name")
-    
-    # --- FIX 2: MappingProcessor non ha getParamQuantity() ---
-    # Errore log: 'struct MappingProcessor' has no member named 'getParamQuantity'
-    # Qui il codice errato è: this->getParamQuantity()->setScaledValue(value);
-    # Deve tornare ad essere: paramQuantity->setScaledValue(value);
-    
-    bad_line_1 = "this->getParamQuantity()->setScaledValue(value);"
-    good_line_1 = "paramQuantity->setScaledValue(value);"
-    
-    if bad_line_1 in content:
-        print("   -> Correggo setScaledValue...")
-        content = content.replace(bad_line_1, good_line_1)
+    path = "src/common/midi.cpp"
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            original = f.read()
         
-    # --- FIX 3: Altra chiamata errata in MappingProcessor ---
-    # Errore log: mapping->lastTargetValue = getParamQuantity()->getScaledValue();
-    
-    bad_line_2 = "mapping->lastTargetValue = getParamQuantity()->getScaledValue();"
-    good_line_2 = "mapping->lastTargetValue = paramQuantity->getScaledValue();"
-    
-    if bad_line_2 in content:
-        print("   -> Correggo getScaledValue...")
-        content = content.replace(bad_line_2, good_line_2)
+        content = fix_midi_cpp_logic(original)
 
-    # --- FIX 4: Pulizia residui generici in quel file ---
-    # Se ci sono altri "getParamQuantity()->" che dovrebbero essere "paramQuantity->"
-    # Lo facciamo solo se preceduti da "if (!" come visto nei log precedenti
-    content = content.replace("if (!getParamQuantity()->isBounded())", "if (!paramQuantity->isBounded())")
-
-    if content != original:
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(content)
-        print(f"✅ File {path} salvato con le correzioni.")
+        if content != original:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"🔧 Riparato: {path}")
+        else:
+            print(f"⚠️ Nessuna modifica su {path}. Controlla se il codice è già aggiornato.")
     else:
-        print(f"⚠️ Nessuna modifica necessaria. Il file sembra già corretto o le righe non corrispondono.")
+        print(f"❌ Errore: {path} non trovato!")
+
+    print("\n✅ Fix driver applicato. Esegui git push.")
 
 if __name__ == "__main__":
-    fix_mapping_hpp()
+    main()
