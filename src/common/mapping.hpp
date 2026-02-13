@@ -153,7 +153,7 @@ struct HandleMapCollection : ParamMapCollection {
 		Module *targetModule = moduleWidget->module;
 		ParamQuantity *paramQuantity = targetModule->paramQuantities[targetParamId];
 		mapping->moduleName = moduleWidget->model->name;
-		mapping->paramName = getParamQuantity()->label;
+		mapping->paramName = paramQuantity->label;
 
 		learnNext();
 	}
@@ -572,10 +572,10 @@ struct MappingProcessor {
 		ParamQuantity* paramQuantity = module->paramQuantities[targetParamId];
 		
 		if (!paramQuantity) return;
-		if (!getParamQuantity()->isBounded()) return;
+		if (!paramQuantity->isBounded()) return;
 
 		float value = params[paramId]->getScaledValue();
-		float targetParameterValue = getParamQuantity()->getScaledValue();
+		float targetParameterValue = paramQuantity->getScaledValue();
 		
 		if(targetParameterValue != mapping->lastTargetValue) {
 			value = targetParameterValue;
@@ -585,7 +585,7 @@ struct MappingProcessor {
 		}
 
 		if(value != mapping->lastValue) {	
-			getParamQuantity()->setScaledValue(value);
+			this->getParamQuantity()->setScaledValue(value);
 			mapping->lastTargetValue = getParamQuantity()->getScaledValue();		
 			mapping->lastValue = value;
 		}
@@ -664,7 +664,7 @@ template <typename TBase = KnobWhite32>
 struct MappableParameter : TBase {
 	using TBase::box;
 	using TBase::addChild;
-	using TBase::paramQuantity;
+	
 
 	int paramId;
 	Module* module = NULL;
@@ -691,7 +691,7 @@ struct MappableParameter : TBase {
 				int targetModuleId = touchedParam->getParamQuantity()->module->id;
 				int targetParamId = touchedParam->getParamQuantity()->paramId;
 				handleMap->commitLearn(paramId, targetModuleId, targetParamId);
-				getParamQuantity()->setScaledValue(touchedParam->getParamQuantity()->getScaledValue());
+				this->getParamQuantity()->setScaledValue(touchedParam->getParamQuantity()->getScaledValue());
 			}
 		}
 		TBase::step();

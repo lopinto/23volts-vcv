@@ -1,63 +1,43 @@
 import os
 import re
 
-def fix_midi_header(content):
-    print("   -> Analisi midi.hpp (Modalità Blind Inject)...")
+def fix_mapping_logic(content):
+    print("   -> Chirurgia specifica su mapping.hpp...")
     
-    # 1. Assicura che ci sia <deque>
-    if "#include <deque>" not in content:
-        content = "#include <deque>\n" + content
+    # 1. FIX: Rimuove "using TBase::paramQuantity;" 
+    # In Rack 2, paramQuantity non è più un membro pubblico, quindi questa riga rompe la compilazione.
+    content = content.replace("using TBase::paramQuantity;", "")
 
-    # Definizioni da iniettare
-    queue_decl = " std::deque<rack::midi::Message> messageQueue; "
-    shift_func = " bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } "
-
-    # 2. INIEZIONE "BRUTE FORCE" (Regex permissive)
-    # Cerca "struct MidiInput" seguito da QUALSIASI COSA fino alla prima graffa "{"
+    # 2. FIX: Reverte le modifiche errate sulle variabili locali
+    # Lo script precedente ha cambiato "paramQuantity->label" in "getParamQuantity()->label"
+    # Ma qui paramQuantity è un puntatore locale definito poco sopra. Lo rimettiamo a posto.
+    content = content.replace("mapping->paramName = getParamQuantity()->label;", "mapping->paramName = paramQuantity->label;")
     
-    # Fix MidiInput (Se non c'è già la coda)
-    if "std::deque" not in content or "struct MidiInput" in content: 
-         # Nota: controlliamo specificamente dentro i blocchi dopo
-         pass
+    # Idem per MappingProcessor: qui paramQuantity sembra essere un membro della classe custom, non di Rack
+    content = content.replace("if (!getParamQuantity()->isBounded())", "if (!paramQuantity->isBounded())")
+    content = content.replace("float targetParameterValue = getParamQuantity()->getScaledValue();", "float targetParameterValue = paramQuantity->getScaledValue();")
 
-    # Strategia: Sostituzione diretta basata sul nome della struct
+    # 3. FIX: Aggiunge "this->" nei template
+    # In MappableParameter<T>, il compilatore non trova getParamQuantity() senza "this->"
+    # Sostituiamo le chiamate corrette ma aggiungendo il puntatore this
+    content = content.replace("getParamQuantity()->setScaledValue", "this->getParamQuantity()->setScaledValue")
     
-    # Fix MidiInput
-    content = re.sub(
-        r'(struct\s+MidiInput\b[^\{]*\{)', 
-        r'\1' + queue_decl + shift_func, 
-        content
-    )
+    # Attenzione: qui c'è una riga complessa nidificata. La sistemiamo specificamente.
+    # Era: getParamQuantity()->setScaledValue(touchedParam->getParamQuantity()->getScaledValue());
+    # Deve diventare: this->getParamQuantity()->setScaledValue(touchedParam->getParamQuantity()->getScaledValue());
+    # (Notare che touchedParam->getParamQuantity() va bene così com'è)
 
-    # Fix MidiInputOutput
-    content = re.sub(
-        r'(struct\s+MidiInputOutput\b[^\{]*\{)', 
-        r'\1' + queue_decl + shift_func, 
-        content
-    )
-
-    # Fix MidiOutput
-    content = re.sub(
-        r'(struct\s+MidiOutput\b[^\{]*\{)', 
-        r'\1' + queue_decl, 
-        content
-    )
-    
-    # Pulizia finale (se per caso l'abbiamo inserito due volte per via del loop precedente)
-    # Rimuove duplicati adiacenti
-    content = content.replace(queue_decl + queue_decl, queue_decl)
-    content = content.replace(shift_func + shift_func, shift_func)
-    
     return content
 
-def fix_source_files(content):
-    # Solite sostituzioni API
+def fix_source_files(content, filename):
+    # Sostituzioni standard (SOLO SE NON SONO GIÀ STATE FATTE)
+    # Usiamo controlli più stretti per evitare doppie sostituzioni
+    
     replacements = [
         (r'(?<!::)\bINPUT\b', 'rack::engine::Port::INPUT'),
         (r'(?<!::)\bOUTPUT\b', 'rack::engine::Port::OUTPUT'),
         (r'(?<!::)\bMenuLabel\b', 'rack::ui::MenuLabel'),
         (r'(?<!::)\bLabel\b', 'rack::app::Label'),
-        (r'paramQuantity->', 'getParamQuantity()->'),
         (r'delete cells;', 'delete[] cells;'),
         (r'std::auto_ptr', 'std::unique_ptr'),
     ]
@@ -65,7 +45,13 @@ def fix_source_files(content):
     for pattern, repl in replacements:
         content = re.sub(pattern, repl, content)
 
-    # Fix onMessage
+    # ParamQuantity è delicato. Lo applichiamo solo se NON siamo in mapping.hpp (che gestiamo a parte)
+    # o se siamo sicuri che sia un accesso membro.
+    if filename != "mapping.hpp":
+        content = content.replace("paramQuantity->", "getParamQuantity()->")
+        content = content.replace("getParamQuantity()->getParamQuantity()->", "getParamQuantity()->") # Fix doppi
+
+    # Fix onMessage (con controllo anti-duplicati)
     if "onMessage" in content:
         content = content.replace("onMessage(rack::midi::Message message)", "onMessage(const rack::midi::Message& message)")
         if "messageQueue.push_back" not in content:
@@ -78,7 +64,7 @@ def fix_source_files(content):
     return content
 
 def main():
-    print("🤖 AGENTE 23VOLTS: Injector...")
+    print("🤖 AGENTE 23VOLTS: Fixer Chirurgico...")
     
     for root, dirs, files in os.walk("src"):
         for file in files:
@@ -90,19 +76,20 @@ def main():
                     
                     content = original
                     
-                    if file.endswith("midi.hpp"):
-                        content = fix_midi_header(content)
-                    
-                    content = fix_source_files(content)
+                    # LOGICA SPECIFICA PER MAPPING.HPP
+                    if file == "mapping.hpp":
+                        content = fix_mapping_logic(content)
+                    else:
+                        content = fix_source_files(content, file)
 
                     if content != original:
                         with open(path, 'w', encoding='utf-8') as f:
                             f.write(content)
-                        print(f"🔧 Iniettato: {file}")
+                        print(f"🔧 Riparato: {file}")
                 except Exception as e:
                     print(f"Errore {file}: {e}")
 
-    print("\n✅ Fatto. Esegui git push.")
+    print("\n✅ Fix applicati. Esegui git push.")
 
 if __name__ == "__main__":
     main()
