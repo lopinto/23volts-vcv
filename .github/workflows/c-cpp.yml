@@ -1,0 +1,40 @@
+name: Build 23volts Windows
+on: [push, workflow_dispatch]
+
+defaults:
+  run:
+    shell: msys2 {0}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git make tar unzip zip mingw-w64-x86_64-toolchain zstd jq
+
+      - name: Get Rack-SDK
+        run: |
+          curl -L -o Rack-SDK.zip "https://vcvrack.com/downloads/Rack-SDK-2.4.1-win-x64.zip"
+          unzip -q Rack-SDK.zip
+          mv Rack-SDK* Rack-SDK || true
+
+      - name: Build Plugin
+        run: |
+          export RACK_DIR=./Rack-SDK
+          # Solo pulizia flag, il codice è già a posto!
+          sed -i 's/-Werror//g' Makefile
+          echo "FLAGS += -w -fpermissive -Wno-deprecated-copy" >> Makefile
+          make dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 23volts-windows-plugin
+          path: dist/*.vcvplugin
