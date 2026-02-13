@@ -831,7 +831,7 @@ struct ClockM8Widget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 
-		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
+		rack::ui::MenuLabel* item = new rack::ui::MenuLabel;
 	 	item->text = "Output Mode ";
 	 	menu->addChild(item);
 
