@@ -356,7 +356,7 @@ struct MemWidget : ModuleWidget {
 
 		// TODO Context menu -> add "Enable noise statistics"
 		
-		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
+		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
 	 	item->text = "Memory Size";
 	 	menu->addChild(item);
 

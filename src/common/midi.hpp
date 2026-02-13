@@ -14,6 +14,8 @@ bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *
 
 struct MidiOutput : rack::dsp::MidiGenerator<rack::PORT_MAX_CHANNELS>, rack::midi::Output { 
 std::deque<rack::midi::Message> messageQueue; 
+ 
+std::deque<rack::midi::Message> messageQueue; 
 
 	bool isConnected() {
 		return driverId > -1 && deviceId > -1;
@@ -38,6 +40,9 @@ std::deque<rack::midi::Message> messageQueue;
 };
 
 struct MidiInputOutput { 
+std::deque<rack::midi::Message> messageQueue; 
+bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
+ 
 std::deque<rack::midi::Message> messageQueue; 
 bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
  

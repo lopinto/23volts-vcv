@@ -145,7 +145,7 @@ struct PolyMergeWidget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 
-		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
+		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
 	 	item->text = "Voices per input";
 	 	menu->addChild(item);
 
