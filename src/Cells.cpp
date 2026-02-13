@@ -675,7 +675,7 @@ struct CellsWidget : ModuleWidget {
 
 		menu->addChild(new MenuSeparator);
 
-		rack::ui::MenuLabel* item = new rack::ui::MenuLabel;
+		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
 	 	item->text = "Algorithm";
 	 	menu->addChild(item);
 

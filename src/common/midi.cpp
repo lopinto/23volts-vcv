@@ -5,7 +5,7 @@ rack::ui::Menu* MidiDriverItem::createChildMenu() {
 	rack::ui::Menu* menu = new rack::ui::Menu;
 
  	if (!port) {
- 		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
+ 		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
  		item->text = "No Driver";
  		menu->addChild(item);
 		return menu;
@@ -28,7 +28,7 @@ rack::ui::Menu* MidiDeviceItem::createChildMenu() {
 	rack::ui::Menu* menu = new rack::ui::Menu;
 
 	if (!port) {
- 		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
+ 		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
  		item->text = "(No device)";
  		menu->addChild(item);
 		return menu;
@@ -76,7 +76,7 @@ rack::ui::Menu* MidiChannelItem::createChildMenu() {
 
 void MidiMenuBuilder::build(rack::ui::Menu* menu, MidiInputOutput* midiIO) {
 
-		rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::MenuLabel;
+		rack::ui::rack::ui::rack::ui::MenuLabel* item = new rack::ui::rack::ui::rack::ui::MenuLabel;
 	 	item->text = "MIDI Configuration";
 	 	menu->addChild(item);
 
