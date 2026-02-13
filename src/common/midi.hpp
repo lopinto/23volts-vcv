@@ -3,21 +3,12 @@
 
 #include "rack.hpp"
 
-struct MidiInput : rack::midi::InputQueue { 
-std::deque<rack::midi::Message> messageQueue; 
-bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
-
-	bool isConnected() {
+struct MidiInput : rack::midi::InputQueue {bool isConnected() {
 		return driverId > -1 && deviceId > -1;
 	}
 };
 
-struct MidiOutput : rack::dsp::MidiGenerator<rack::PORT_MAX_CHANNELS>, rack::midi::Output { 
-std::deque<rack::midi::Message> messageQueue; 
- 
-std::deque<rack::midi::Message> messageQueue; 
-
-	bool isConnected() {
+struct MidiOutput : rack::dsp::MidiGenerator<rack::PORT_MAX_CHANNELS>, rack::midi::Output {bool isConnected() {
 		return driverId > -1 && deviceId > -1;
 	}
 
@@ -39,17 +30,7 @@ std::deque<rack::midi::Message> messageQueue;
 	}
 };
 
-struct MidiInputOutput { 
-std::deque<rack::midi::Message> messageQueue; 
-bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
- 
-std::deque<rack::midi::Message> messageQueue; 
-bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
- 
-std::deque<rack::midi::Message> messageQueue; 
-bool shift(rack::midi::Message *msg) { if (messageQueue.empty()) return false; *msg = messageQueue.front(); messageQueue.pop_front(); return true; } 
-
-	MidiInput input;
+struct MidiInputOutput {MidiInput input;
 	MidiOutput output;
 
 	virtual void onPortChange() {}
