@@ -153,7 +153,7 @@ struct HandleMapCollection : ParamMapCollection {
 		Module *targetModule = moduleWidget->module;
 		ParamQuantity *paramQuantity = targetModule->paramQuantities[targetParamId];
 		mapping->moduleName = moduleWidget->model->name;
-		mapping->paramName = paramQuantity->label;
+		mapping->paramName = paramQuantity->name;
 
 		learnNext();
 	}
@@ -585,8 +585,8 @@ struct MappingProcessor {
 		}
 
 		if(value != mapping->lastValue) {	
-			this->getParamQuantity()->setScaledValue(value);
-			mapping->lastTargetValue = getParamQuantity()->getScaledValue();		
+			paramQuantity->setScaledValue(value);
+			mapping->lastTargetValue = paramQuantity->getScaledValue();		
 			mapping->lastValue = value;
 		}
 	}
